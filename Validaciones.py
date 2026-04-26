@@ -415,4 +415,39 @@ def graficar_resample(self, columna, frecuencias=['D', 'ME', 'QE']):
             'M': 'Mensual',  # Para compatibilidad hacia atrás
             'Q': 'Trimestral'  # Para compatibilidad hacia atrás
         } 
+# Crear figura con subplots
+        n_freq = len(frecuencias)
+        fig, axes = plt.subplots(n_freq, 1, figsize=(12, 4*n_freq))
+        
+        # Si solo hay una frecuencia, axes no es array
+        if n_freq == 1:
+            axes = [axes]
+        
+        fig.suptitle(f'Resample de {columna} en diferentes frecuencias', 
+                    fontsize=14, fontweight='bold')
+        
+        # Graficar para cada frecuencia
+        for i, freq in enumerate(frecuencias):
+            # Realizar resample (promedio)
+            datos_resample = self.df[columna].resample(freq).mean()
+            
+            # Graficar
+            axes[i].plot(datos_resample.index, datos_resample.values, 
+                        marker='o', linewidth=2, markersize=4, color='steelblue')
+            axes[i].set_title(f'Resample {nombres_freq.get(freq, freq)}')
+            axes[i].set_xlabel('Fecha')
+            axes[i].set_ylabel(f'{columna} (promedio)')
+            axes[i].grid(True, alpha=0.3)
+            axes[i].tick_params(axis='x', rotation=45)
+        
+        plt.tight_layout()
+        
+        # Guardar gráfico
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = f"{self.carpeta_graficos}/resample_{columna}_{timestamp}.png"
+        plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
+        print(f" Gráfico de resample guardado: {nombre_archivo}")
+        
+        plt.show()
+
         
