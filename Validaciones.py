@@ -540,107 +540,138 @@ class ArchivoEEG:
         Restaura los datos de trabajo a su estado original.
         """
         self.data = self.data_original.copy()
-        print("✓ Datos restaurados al estado original")
+        print(" Datos restaurados al estado original")
     
-def proceso1_sumar_canales(self, canales, punto_min, punto_max, epoca=0):
+    def proceso1_sumar_canales(self, canales, punto_min, punto_max, epoca=0):
+            """
+            Proceso 1: Selecciona 3 canales en un rango de puntos, los suma
+            y genera un gráfico con 2 subplots:
+            - Subplot superior : los 3 canales individuales.
+            - Subplot inferior : la suma de los 3 canales.
+    
+            La matriz se trabaja en 2D extrayendo la época indicada
+            (shape resultante: canales x muestras).
+    
+            Parámetros:
+            
+            canales : list[int]
+                Lista con exactamente 3 índices de canales (ej. [0, 3, 7]).
+            punto_min : int
+                Punto inicial del rango de muestras (incluido).
+            punto_max : int
+                Punto final del rango de muestras (excluido).
+            epoca : int
+                Índice de la época a analizar (por defecto 0).
+            """
+            #  Validaciones
+            if len(canales) != 3:
+                print(" Error: Debe seleccionar exactamente 3 canales.")
+                return
+    
+            for canal in canales:
+                if canal < 0 or canal >= self.data.shape[0]:
+                    print(f" Error: Canal {canal} fuera de rango "
+                        f"(válido: 0–{self.data.shape[0]-1}).")
+                    return
+    
+            if punto_min < 0 or punto_max > self.data.shape[1]:
+                print(f" Error: Rango de puntos inválido "
+                    f"(válido: 0–{self.data.shape[1]}).")
+                return
+    
+            if punto_min >= punto_max:
+                print(" Error: punto_min debe ser menor que punto_max.")
+                return
+    
+            if epoca < 0 or epoca >= self.data.shape[2]:
+                print(f" Error: Época {epoca} fuera de rango "
+                    f"(válido: 0–{self.data.shape[2]-1}).")
+                return
+    
+            # Procesamiento 
+            # Convertir 3D → 2D para la época seleccionada
+            datos_2d = self.data[:, :, epoca]   # shape: (canales, muestras)
+    
+            c1 = datos_2d[canales[0], punto_min:punto_max]
+            c2 = datos_2d[canales[1], punto_min:punto_max]
+            c3 = datos_2d[canales[2], punto_min:punto_max]
+    
+            suma = c1 + c2 + c3
+    
+            # Eje temporal en segundos
+            tiempo = np.arange(punto_min, punto_max) / self.fs
+    
+            # Gráficos 
+            fig, axes = plt.subplots(2, 1, figsize=(12, 8))
+            fig.suptitle(
+                f'Proceso 1 – Suma de Canales {canales} | {self.nombre} | Época {epoca}',
+                fontsize=13, fontweight='bold'
+            )
+    
+            # Subplot 1: canales individuales
+            colores = ['steelblue', 'darkorange', 'seagreen']
+            for idx, (datos_canal, color) in enumerate(zip([c1, c2, c3], colores)):
+                axes[0].plot(tiempo, datos_canal, label=f'Canal {canales[idx]}',
+                            linewidth=1, alpha=0.85, color=color)
+            axes[0].set_title('Canales Individuales')
+            axes[0].set_xlabel('Tiempo (s)')
+            axes[0].set_ylabel('Amplitud (μV)')
+            axes[0].legend(loc='upper right')
+            axes[0].grid(True, alpha=0.3)
+    
+            # Subplot 2: suma de canales
+            axes[1].plot(tiempo, suma, linewidth=1.5, color='darkred')
+            axes[1].set_title(
+                f'Suma: Canal {canales[0]} + Canal {canales[1]} + Canal {canales[2]}'
+            )
+            axes[1].set_xlabel('Tiempo (s)')
+            axes[1].set_ylabel('Amplitud (μV)')
+            axes[1].grid(True, alpha=0.3)
+    
+            plt.tight_layout()
+    
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_archivo = (f"{self.carpeta_graficos}/proceso1_"
+                            f"c{canales[0]}-c{canales[1]}-c{canales[2]}_"
+                            f"ep{epoca}_{timestamp}.png")
+            plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
+            print(f" Gráfico guardado: {nombre_archivo}")
+            plt.show()
+    
+            print(f"\n Resumen del procesamiento:")
+            print(f"   Canales seleccionados : {canales}")
+            print(f"   Rango de muestras     : {punto_min}–{punto_max}")
+            print(f"   Número de muestras    : {punto_max - punto_min}")
+            print(f"   Duración analizada    : {(punto_max - punto_min) / self.fs:.3f} s")
+            print(f"   Época analizada       : {epoca}")  
+
+    def proceso2_promedio_desviacion(self, eje=2):
         """
-        Proceso 1: Selecciona 3 canales en un rango de puntos, los suma
-        y genera un gráfico con 2 subplots:
-          - Subplot superior : los 3 canales individuales.
-          - Subplot inferior : la suma de los 3 canales.
+        Proceso 2: Calcula el promedio y la desviación estándar de la matriz
+        3D a lo largo de un eje y los grafica usando stem plots en 2 subplots.
  
-        La matriz se trabaja en 2D extrayendo la época indicada
-        (shape resultante: canales × muestras).
+        La matriz se mantiene en su forma 3D original; numpy reduce el eje
+        indicado y produce arrays 2D que se aplanan para la visualización.
+ 
+        Ejes disponibles:
+          - eje=0 : reducción sobre canales   → resultado shape (muestras, épocas)
+          - eje=1 : reducción sobre muestras  → resultado shape (canales, épocas)
+          - eje=2 : reducción sobre épocas    → resultado shape (canales, muestras)
  
         Parámetros:
-        -----------
-        canales : list[int]
-            Lista con exactamente 3 índices de canales (ej. [0, 3, 7]).
-        punto_min : int
-            Punto inicial del rango de muestras (incluido).
-        punto_max : int
-            Punto final del rango de muestras (excluido).
-        epoca : int
-            Índice de la época a analizar (por defecto 0).
+       
+        eje : int
+            Eje sobre el cual calcular (0, 1 o 2). Por defecto 2 (épocas).
         """
-        # ---- Validaciones ----
-        if len(canales) != 3:
-            print(" Error: Debe seleccionar exactamente 3 canales.")
+        # Validación 
+        if eje not in [0, 1, 2]:
+            print(" Error: El eje debe ser 0, 1 o 2.")
             return
  
-        for canal in canales:
-            if canal < 0 or canal >= self.data.shape[0]:
-                print(f" Error: Canal {canal} fuera de rango "
-                      f"(válido: 0–{self.data.shape[0]-1}).")
-                return
+        nombres_eje = {
+            0: 'canales (eje 0)',
+            1: 'muestras/tiempo (eje 1)',
+            2: 'épocas (eje 2)'
+        }
  
-        if punto_min < 0 or punto_max > self.data.shape[1]:
-            print(f" Error: Rango de puntos inválido "
-                  f"(válido: 0–{self.data.shape[1]}).")
-            return
- 
-        if punto_min >= punto_max:
-            print(" Error: punto_min debe ser menor que punto_max.")
-            return
- 
-        if epoca < 0 or epoca >= self.data.shape[2]:
-            print(f" Error: Época {epoca} fuera de rango "
-                  f"(válido: 0–{self.data.shape[2]-1}).")
-            return
- 
-        # ---- Procesamiento ----
-        # Convertir 3D → 2D para la época seleccionada
-        datos_2d = self.data[:, :, epoca]   # shape: (canales, muestras)
- 
-        c1 = datos_2d[canales[0], punto_min:punto_max]
-        c2 = datos_2d[canales[1], punto_min:punto_max]
-        c3 = datos_2d[canales[2], punto_min:punto_max]
- 
-        suma = c1 + c2 + c3
- 
-        # Eje temporal en segundos
-        tiempo = np.arange(punto_min, punto_max) / self.fs
- 
-        # ---- Gráficos ----
-        fig, axes = plt.subplots(2, 1, figsize=(12, 8))
-        fig.suptitle(
-            f'Proceso 1 – Suma de Canales {canales} | {self.nombre} | Época {epoca}',
-            fontsize=13, fontweight='bold'
-        )
- 
-        # Subplot 1: canales individuales
-        colores = ['steelblue', 'darkorange', 'seagreen']
-        for idx, (datos_canal, color) in enumerate(zip([c1, c2, c3], colores)):
-            axes[0].plot(tiempo, datos_canal, label=f'Canal {canales[idx]}',
-                         linewidth=1, alpha=0.85, color=color)
-        axes[0].set_title('Canales Individuales')
-        axes[0].set_xlabel('Tiempo (s)')
-        axes[0].set_ylabel('Amplitud (μV)')
-        axes[0].legend(loc='upper right')
-        axes[0].grid(True, alpha=0.3)
- 
-        # Subplot 2: suma de canales
-        axes[1].plot(tiempo, suma, linewidth=1.5, color='darkred')
-        axes[1].set_title(
-            f'Suma: Canal {canales[0]} + Canal {canales[1]} + Canal {canales[2]}'
-        )
-        axes[1].set_xlabel('Tiempo (s)')
-        axes[1].set_ylabel('Amplitud (μV)')
-        axes[1].grid(True, alpha=0.3)
- 
-        plt.tight_layout()
- 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nombre_archivo = (f"{self.carpeta_graficos}/proceso1_"
-                          f"c{canales[0]}-c{canales[1]}-c{canales[2]}_"
-                          f"ep{epoca}_{timestamp}.png")
-        plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
-        print(f" Gráfico guardado: {nombre_archivo}")
-        plt.show()
- 
-        print(f"\n Resumen del procesamiento:")
-        print(f"   Canales seleccionados : {canales}")
-        print(f"   Rango de muestras     : {punto_min}–{punto_max}")
-        print(f"   Número de muestras    : {punto_max - punto_min}")
-        print(f"   Duración analizada    : {(punto_max - punto_min) / self.fs:.3f} s")
-        print(f"   Época analizada       : {epoca}")  
+        print(f"\n Calculando promedio y desviación estándar sobre {nombres_eje[eje]}...")
