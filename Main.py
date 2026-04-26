@@ -295,3 +295,46 @@ def submenu_eeg(sistema):
         elif opcion == '0':
             break
 
+# Menú principal
+
+def menu_principal():
+    """
+    Función principal que inicializa el sistema y muestra el menú interactivo.
+    Loop principal del programa; se ejecuta hasta que el usuario elija salir.
+    """
+    sistema = Sistema()
+ 
+    print("\n" + "="*60)
+    print("   SISTEMA EXPLORADOR DE ARCHIVOS EEG Y SIATA")
+    print("   Proyecto de Procesamiento de Señales")
+    print("="*60)
+    print("   Bienvenido al sistema. Cargue archivos CSV o EEG")
+    print("   y explore sus datos de forma interactiva.")
+ 
+    while True:
+        titulo("MENÚ PRINCIPAL")
+        print("   1. Gestión de archivos CSV (SIATA – Calidad del Aire)")
+        print("   2. Gestión de archivos EEG (.MAT – Electroencefalografías)")
+        print("   3. Listar todos los archivos cargados en el sistema")
+        print("   0. Salir")
+        linea('-')
+ 
+        opcion = pedir_opcion(['0', '1', '2', '3'])
+ 
+        if opcion == '1':
+            submenu_csv(sistema)
+ 
+        elif opcion == '2':
+            submenu_eeg(sistema)
+ 
+        elif opcion == '3':
+            sistema.listar_archivos()
+ 
+        elif opcion == '0':
+            linea()
+            print(" Esto me saco canas")
+            linea()
+            break
+
+if __name__ == "__main__":
+    menu_principal()
