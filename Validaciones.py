@@ -271,6 +271,12 @@ class ArchivoCSV:
         print(f"  Nueva columna '{nueva_columna}' creada con raíz cuadrada de '{nombre_columna}'")
         print(f"\nPrimeros 5 valores:")
         print(self.df[[nombre_columna, nueva_columna]].head())
+
+        # Guardar resultado en CSV
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = f"csv/apply_{nombre_columna}_{timestamp}.csv"
+        self.df[[nombre_columna, nueva_columna]].to_csv(nombre_archivo, index=True)
+        print(f"\n Resultado guardado en: {nombre_archivo}")
     
     def aplicar_operacion_map(self, nombre_columna):
         """
@@ -314,6 +320,12 @@ class ArchivoCSV:
         print(f"  Rangos: Bajo < {p33:.2f} | Medio < {p66:.2f} | Alto >= {p66:.2f}")
         print(f"\nDistribución de categorías:")
         print(self.df[nueva_columna].value_counts())
+
+        # Guardar resultado en CSV
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = f"csv/map_{nombre_columna}_{timestamp}.csv"
+        self.df[[nombre_columna, nueva_columna]].to_csv(nombre_archivo, index=True)
+        print(f"\n Resultado guardado en: {nombre_archivo}")
     
     def sumar_restar_columnas(self, columna1, columna2, operacion='suma'):
         """
@@ -359,6 +371,12 @@ class ArchivoCSV:
         print(f"  Nueva columna '{nueva_columna}' = {columna1} {simbolo} {columna2}")
         print(f"\nPrimeros 5 valores:")
         print(self.df[[columna1, columna2, nueva_columna]].head())
+
+        # Guardar resultado en CSV
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = f"_csv/{operacion}_{columna1}_{columna2}_{timestamp}.csv"
+        self.df[[columna1, columna2, nueva_columna]].to_csv(nombre_archivo, index=True)
+        print(f"\n Resultado guardado en: {nombre_archivo}")
 
     def convertir_fecha_indice(self, nombre_columna_fecha='fecha_hora'):
             """
