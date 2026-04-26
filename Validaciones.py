@@ -360,4 +360,59 @@ class ArchivoCSV:
         print(f"\nPrimeros 5 valores:")
         print(self.df[[columna1, columna2, nueva_columna]].head())
 
-
+def convertir_fecha_indice(self, nombre_columna_fecha='fecha_hora'):
+        """
+        Convierte la columna de fechas en índice del DataFrame.
+        
+        Parámetros:
+        
+        nombre_columna_fecha : str
+            Nombre de la columna que contiene las fechas (por defecto 'fecha_hora')
+        """
+        if nombre_columna_fecha not in self.df.columns:
+            print(f" Error: La columna '{nombre_columna_fecha}' no existe")
+            return
+        
+        # Convertir a datetime y establecer como índice
+        self.df[nombre_columna_fecha] = pd.to_datetime(self.df[nombre_columna_fecha])
+        self.df.set_index(nombre_columna_fecha, inplace=True)
+        
+        print(f" Columna '{nombre_columna_fecha}' convertida a índice")
+        print(f"  Rango de fechas: {self.df.index.min()} a {self.df.index.max()}")
+        
+def graficar_resample(self, columna, frecuencias=['D', 'ME', 'QE']):
+        """
+        Realiza resample de los datos y grafica en diferentes frecuencias temporales.
+        Requiere que el índice sea de tipo datetime.
+        
+        Parámetros:
+        columna : str
+            Nombre de la columna a graficar
+        frecuencias : list
+            Lista de frecuencias para resample (por defecto ['D', 'ME', 'QE'])
+            D = Días, ME = Meses (Month End), QE = Trimestres (Quarter End)
+        """
+        # Validar que el índice sea datetime
+        if not isinstance(self.df.index, pd.DatetimeIndex):
+            print(" Error: El índice debe ser de tipo datetime")
+            print("  Use primero el método convertir_fecha_indice()")
+            return
+        
+        # Validar columna
+        if columna not in self.df.columns:
+            print(f" Error: La columna '{columna}' no existe")
+            return
+        
+        if not pd.api.types.is_numeric_dtype(self.df[columna]):
+            print(f" Error: La columna '{columna}' no es numérica")
+            return
+        
+        # Diccionario de nombres de frecuencias
+        nombres_freq = {
+            'D': 'Diario',
+            'ME': 'Mensual',
+            'QE': 'Trimestral',
+            'M': 'Mensual',  # Para compatibilidad hacia atrás
+            'Q': 'Trimestral'  # Para compatibilidad hacia atrás
+        } 
+        
