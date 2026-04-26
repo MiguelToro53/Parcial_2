@@ -245,6 +245,119 @@ class ArchivoCSV:
         
         plt.show()
     
+    def aplicar_operacion_apply(self, nombre_columna):
+        """
+        Aplica una operación usando apply() sobre una columna.
+        Ejemplo: Convertir valores a su raíz cuadrada.
+        
+        Parámetros:
+
+        nombre_columna : str
+            Nombre de la columna sobre la cual aplicar la operación
+        """
+        if nombre_columna not in self.df.columns:
+            print(f" Error: La columna '{nombre_columna}' no existe")
+            return
+        
+        if not pd.api.types.is_numeric_dtype(self.df[nombre_columna]):
+            print(f" Error: La columna '{nombre_columna}' no es numérica")
+            return
+        
+        # Aplicar raíz cuadrada usando apply 
+        nueva_columna = f"{nombre_columna}_sqrt"
+        self.df[nueva_columna] = self.df[nombre_columna].apply(lambda x: np.sqrt(x) if x >= 0 else np.nan)
+        
+        print(f" Operación apply() completada:")
+        print(f"  Nueva columna '{nueva_columna}' creada con raíz cuadrada de '{nombre_columna}'")
+        print(f"\nPrimeros 5 valores:")
+        print(self.df[[nombre_columna, nueva_columna]].head())
     
+    def aplicar_operacion_map(self, nombre_columna):
+        """
+        Aplica una operación usando map() sobre una columna.
+        Ejemplo: Clasificar valores en categorías (Bajo, Medio, Alto).
+        
+        Parámetros:
+        
+        nombre_columna : str
+            Nombre de la columna sobre la cual aplicar la operación
+        """
+        if nombre_columna not in self.df.columns:
+            print(f" Error: La columna '{nombre_columna}' no existe")
+            return
+        
+        if not pd.api.types.is_numeric_dtype(self.df[nombre_columna]):
+            print(f" Error: La columna '{nombre_columna}' no es numérica")
+            return
+        
+        # Calcular percentiles para categorización
+        p33 = self.df[nombre_columna].quantile(0.33)
+        p66 = self.df[nombre_columna].quantile(0.66)
+        
+        # Función de categorización
+        def categorizar(valor):
+            if pd.isna(valor):
+                return 'Sin dato'
+            elif valor < p33:
+                return 'Bajo'
+            elif valor < p66:
+                return 'Medio'
+            else:
+                return 'Alto'
+        
+        # Aplicar map
+        nueva_columna = f"{nombre_columna}_categoria"
+        self.df[nueva_columna] = self.df[nombre_columna].map(categorizar)
+        
+        print(f" Operación map() completada:")
+        print(f"  Nueva columna '{nueva_columna}' creada con categorías")
+        print(f"  Rangos: Bajo < {p33:.2f} | Medio < {p66:.2f} | Alto >= {p66:.2f}")
+        print(f"\nDistribución de categorías:")
+        print(self.df[nueva_columna].value_counts())
+    
+    def sumar_restar_columnas(self, columna1, columna2, operacion='suma'):
+        """
+        Suma o resta dos columnas y crea una nueva columna con el resultado.
+        
+        Parámetros:
+        columna1 : str
+            Nombre de la primera columna
+        columna2 : str
+            Nombre de la segunda columna
+        operacion : str
+            'suma' o 'resta' (por defecto 'suma')
+        """
+        # Validar columnas
+        if columna1 not in self.df.columns:
+            print(f" Error: La columna '{columna1}' no existe")
+            return
+        if columna2 not in self.df.columns:
+            print(f" Error: La columna '{columna2}' no existe")
+            return
+        
+        if not pd.api.types.is_numeric_dtype(self.df[columna1]):
+            print(f" Error: La columna '{columna1}' no es numérica")
+            return
+        if not pd.api.types.is_numeric_dtype(self.df[columna2]):
+            print(f" Error: La columna '{columna2}' no es numérica")
+            return
+        
+        # Realizar operación
+        if operacion.lower() == 'suma':
+            nueva_columna = f"{columna1}_mas_{columna2}"
+            self.df[nueva_columna] = self.df[columna1] + self.df[columna2]
+            simbolo = '+'
+        elif operacion.lower() == 'resta':
+            nueva_columna = f"{columna1}_menos_{columna2}"
+            self.df[nueva_columna] = self.df[columna1] - self.df[columna2]
+            simbolo = '-'
+        else:
+            print(" Error: Operación no válida. Use 'suma' o 'resta'")
+            return
+        
+        print(f" Operación {operacion} completada:")
+        print(f"  Nueva columna '{nueva_columna}' = {columna1} {simbolo} {columna2}")
+        print(f"\nPrimeros 5 valores:")
+        print(self.df[[columna1, columna2, nueva_columna]].head())
 
 
