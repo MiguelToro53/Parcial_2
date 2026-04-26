@@ -238,4 +238,13 @@ class ArchivoCSV:
         
         # Guardar gráfico
 
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = f"{self.carpeta_graficos}/graficos_{nombre_columna}_{timestamp}.png"
+        plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
+        print(f" Gráfico guardado: {nombre_archivo}")
+        
+        plt.show()
+    
+    
+
 
