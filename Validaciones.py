@@ -675,3 +675,64 @@ class ArchivoEEG:
         }
  
         print(f"\n Calculando promedio y desviación estándar sobre {nombres_eje[eje]}...")
+        
+        # Cálculo sobre la matriz 3D 
+        promedio = np.mean(self.data, axis=eje)   # shape resultante varía según eje
+        desviacion = np.std(self.data, axis=eje)
+ 
+        # Aplanar para graficar con stem (1D)
+        prom_flat = promedio.flatten()
+        desv_flat = desviacion.flatten()
+        indices = np.arange(len(prom_flat))
+ 
+        # Gráficos con stem 
+        fig, axes = plt.subplots(2, 1, figsize=(14, 9))
+        fig.suptitle(
+            f'Proceso 2 – Promedio y Desviación Estándar\n'
+            f'{self.nombre} | Reducción sobre {nombres_eje[eje]}',
+            fontsize=13, fontweight='bold'
+        )
+ 
+        # Subplot 1: Promedio (stem)
+        markerline, stemlines, baseline = axes[0].stem(
+            indices, prom_flat, linefmt='steelblue', markerfmt='C0o',
+            basefmt='k-'
+        )
+        plt.setp(stemlines, linewidth=0.6, alpha=0.7)
+        plt.setp(markerline, markersize=3)
+        axes[0].set_title(f'Promedio a lo largo de {nombres_eje[eje]}')
+        axes[0].set_xlabel('Índice (aplanado)')
+        axes[0].set_ylabel('Amplitud media (μV)')
+        axes[0].grid(True, alpha=0.25)
+ 
+        # Subplot 2: Desviación estándar (stem)
+        markerline2, stemlines2, baseline2 = axes[1].stem(
+            indices, desv_flat, linefmt='darkorange', markerfmt='C1o',
+            basefmt='k-'
+        )
+        plt.setp(stemlines2, linewidth=0.6, alpha=0.7)
+        plt.setp(markerline2, markersize=3)
+        axes[1].set_title(f'Desviación Estándar a lo largo de {nombres_eje[eje]}')
+        axes[1].set_xlabel('Índice (aplanado)')
+        axes[1].set_ylabel('Desviación estándar (μV)')
+        axes[1].grid(True, alpha=0.25)
+ 
+        plt.tight_layout()
+ 
+        # Guardar gráfico
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = (f"{self.carpeta_graficos}/proceso2_"
+                          f"prom_desv_eje{eje}_{timestamp}.png")
+        plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
+        print(f" Gráfico guardado: {nombre_archivo}")
+        plt.show()
+ 
+        # Resumen numérico
+        print(f"\n Resumen estadístico:")
+        print(f"   Shape original de 'data'  : {self.data.shape}")
+        print(f"   Eje de reducción          : {eje} ({nombres_eje[eje]})")
+        print(f"   Shape del resultado       : {promedio.shape}")
+        print(f"   Promedio global           : {prom_flat.mean():.4f} μV")
+        print(f"   Desv. estándar global     : {desv_flat.mean():.4f} μV")
+        print(f"   Valor máx. del promedio   : {prom_flat.max():.4f} μV")
+        print(f"   Valor mín. del promedio   : {prom_flat.min():.4f} μV")
