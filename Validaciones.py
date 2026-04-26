@@ -450,4 +450,37 @@ def graficar_resample(self, columna, frecuencias=['D', 'ME', 'QE']):
         
         plt.show()
 
+
+
+# CLASE ARCHIVOEEG - Manipulación de archivos .MAT de EEG
+
+class ArchivoEEG:
+    """
+    Clase para manipular archivos .MAT de electroencefalografías (EEG).
+    Permite cargar, visualizar estructura y procesar señales de EEG.
+    """
+    
+    def __init__(self, ruta_archivo, nombre=None):
+        """
+        Constructor de la clase ArchivoEEG.
         
+        Parámetros:
+        
+        ruta_archivo : str
+            Ruta completa al archivo .MAT
+        nombre : str, opcional
+            Nombre descriptivo del archivo (si no se provee, usa el nombre del archivo)
+        """
+        self.ruta_archivo = ruta_archivo
+        self.nombre = nombre if nombre else os.path.basename(ruta_archivo)
+        self.data_original = None  # Datos originales (nunca se modifican)
+        self.data = None  # Datos de trabajo (copia)
+        self.fs = 1000  # Frecuencia de muestreo en Hz
+        self.carpeta_graficos = "graficos_eeg"  # Carpeta para guardar gráficos
+        
+        # Crear carpeta de gráficos si no existe
+        if not os.path.exists(self.carpeta_graficos):
+            os.makedirs(self.carpeta_graficos)
+        
+        # Cargar el archivo
+        self._cargar_archivo()
