@@ -6,7 +6,7 @@ CSV (SIATA - Calidad del Aire) y MAT (EEG - Electroencefalografías).
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-#import scipy.io as sio
+import scipy.io as sio
 from datetime import datetime
 import os
 
@@ -675,7 +675,7 @@ class ArchivoEEG:
         }
  
         print(f"\n Calculando promedio y desviación estándar sobre {nombres_eje[eje]}...")
-        
+
         # Cálculo sobre la matriz 3D 
         promedio = np.mean(self.data, axis=eje)   # shape resultante varía según eje
         desviacion = np.std(self.data, axis=eje)
