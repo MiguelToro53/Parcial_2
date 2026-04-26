@@ -9,7 +9,7 @@ El programa inicia un menú interactivo que permite:
   - Guardar gráficos automáticamente en carpetas organizadas.
  
 Bibliotecas utilizadas:
-    numpy, pandas, matplotlib, scipy
+    numpy, pandas, matplotlib, scipy, json
  
 Estructura del proyecto:
     Validaciones.py  ← clases Sistema, ArchivoCSV, ArchivoEEG
@@ -310,6 +310,17 @@ def menu_principal():
     print("="*60)
     print("   Bienvenido al sistema. Cargue archivos CSV o EEG")
     print("   y explore sus datos de forma interactiva.")
+
+    # Al crear el Sistema, _cargar_estado() se ejecuta automáticamente
+    # y recupera todos los archivos registrados en sesiones anteriores
+    sistema = Sistema()
+ 
+    total = len(sistema.archivos_csv) + len(sistema.archivos_eeg)
+    if total == 0:
+        print("   Bienvenido. No hay archivos de sesiones anteriores.")
+        print("   Cargue archivos CSV o EEG desde el menú.")
+    else:
+        print("   Sesión restaurada. Use la opción 3 para ver los archivos cargados.")
  
     while True:
         titulo("MENÚ PRINCIPAL")

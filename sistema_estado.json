@@ -1,0 +1,14 @@
+{
+  "csv": [
+    {
+      "ruta": "/home/migueltoro/Documents/Universidad/Parcial2_Info/Ej/CalAir_VA_2019.csv",
+      "nombre": "Prueba 1"
+    }
+  ],
+  "eeg": [
+    {
+      "ruta": "/home/migueltoro/Documents/Universidad/Parcial2_Info/Ej/C001R_EP_reposo.mat",
+      "nombre": "Prueba 1"
+    }
+  ]
+}

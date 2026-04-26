@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import scipy.io as sio
 from datetime import datetime
 import os
+import json
 
 
 # CLASE SISTEMA - Gestor de objetos creados
@@ -17,14 +18,62 @@ class Sistema:
     """
     Clase que gestiona y almacena todos los objetos de archivos creados
     (tanto CSV como MAT). Permite búsqueda y listado de objetos.
-    """
     
+    """
+    ARCHIVO_ESTADO = "sistema_estado.json"
+
     def __init__(self):
         """
         Constructor de la clase Sistema.
         """
         self.archivos_csv = []  # Lista de objetos ArchivoCSV
         self.archivos_eeg = []  # Lista de objetos ArchivoEEG
+        self._cargar_estado()   # Carga el estado anterior
+
+    def _guardar_estado(self):
+        estado = {
+            "csv": [{"ruta": a.ruta_archivo, "nombre": a.nombre}
+                    for a in self.archivos_csv],
+            "eeg": [{"ruta": a.ruta_archivo, "nombre": a.nombre}
+                    for a in self.archivos_eeg]
+        }
+        with open(self.ARCHIVO_ESTADO, "w", encoding="utf-8") as f:
+            json.dump(estado, f, indent=2, ensure_ascii=False)
+
+    def _cargar_estado(self):
+        if not os.path.exists(self.ARCHIVO_ESTADO):
+            return
+        try:
+            with open(self.ARCHIVO_ESTADO, "r", encoding="utf-8") as f:
+                estado = json.load(f)
+            csv_recuperados = 0
+            for entrada in estado.get("csv", []):
+                if os.path.exists(entrada["ruta"]):
+                    try:
+                        obj = ArchivoCSV(entrada["ruta"], entrada["nombre"])
+                        self.archivos_csv.append(obj)
+                        csv_recuperados += 1
+                    except Exception as e:
+                        print(f" No se pudo recargar '{entrada['nombre']}': {e}")
+                else:
+                    print(f" Archivo no encontrado, se omite: {entrada['ruta']}")
+            eeg_recuperados = 0
+            for entrada in estado.get("eeg", []):
+                if os.path.exists(entrada["ruta"]):
+                    try:
+                        obj = ArchivoEEG(entrada["ruta"], entrada["nombre"])
+                        self.archivos_eeg.append(obj)
+                        eeg_recuperados += 1
+                    except Exception as e:
+                        print(f" No se pudo recargar '{entrada['nombre']}': {e}")
+                else:
+                    print(f" Archivo no encontrado, se omite: {entrada['ruta']}")
+            total = csv_recuperados + eeg_recuperados
+            if total > 0:
+                print(f"\n {total} archivo(s) recuperado(s) de la sesión anterior.")
+                print(f"   CSV: {csv_recuperados} | EEG: {eeg_recuperados}")
+        except Exception as e:
+            print(f" Error al leer el estado guardado: {e}")
         
     def agregar_csv(self, archivo_csv):
         """
@@ -36,6 +85,7 @@ class Sistema:
         """
         if isinstance(archivo_csv, ArchivoCSV):
             self.archivos_csv.append(archivo_csv)
+            self._guardar_estado()  # Guardar estado después de agregar
             print(f" Archivo CSV '{archivo_csv.nombre}' agregado al sistema")
         else:
             print(" Error: El objeto no es de tipo ArchivoCSV")
@@ -50,6 +100,7 @@ class Sistema:
         """
         if isinstance(archivo_eeg, ArchivoEEG):
             self.archivos_eeg.append(archivo_eeg)
+            self._guardar_estado()  # Guardar estado después de agregar
             print(f" Archivo EEG '{archivo_eeg.nombre}' agregado al sistema")
         else:
             print(" Error: El objeto no es de tipo ArchivoEEG")
@@ -274,7 +325,7 @@ class ArchivoCSV:
 
         # Guardar resultado en CSV
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nombre_archivo = f"csv/apply_{nombre_columna}_{timestamp}.csv"
+        nombre_archivo = f"graficos_csv/apply_{nombre_columna}_{timestamp}.csv"
         self.df[[nombre_columna, nueva_columna]].to_csv(nombre_archivo, index=True)
         print(f"\n Resultado guardado en: {nombre_archivo}")
     
@@ -323,7 +374,7 @@ class ArchivoCSV:
 
         # Guardar resultado en CSV
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nombre_archivo = f"csv/map_{nombre_columna}_{timestamp}.csv"
+        nombre_archivo = f"graficos_csv/map_{nombre_columna}_{timestamp}.csv"
         self.df[[nombre_columna, nueva_columna]].to_csv(nombre_archivo, index=True)
         print(f"\n Resultado guardado en: {nombre_archivo}")
     
@@ -374,7 +425,7 @@ class ArchivoCSV:
 
         # Guardar resultado en CSV
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nombre_archivo = f"_csv/{operacion}_{columna1}_{columna2}_{timestamp}.csv"
+        nombre_archivo = f"graficos_csv/{operacion}_{columna1}_{columna2}_{timestamp}.csv"
         self.df[[columna1, columna2, nueva_columna]].to_csv(nombre_archivo, index=True)
         print(f"\n Resultado guardado en: {nombre_archivo}")
 
