@@ -112,3 +112,105 @@ def seleccionar_objeto(lista, tipo_nombre):
  
     idx = pedir_entero("   Seleccione número: ", minimo=1, maximo=len(lista))
     return lista[idx - 1]
+
+# Sub-menús
+
+def submenu_csv(sistema):
+    """
+    Sub-menú completo para la gestión y procesamiento de archivos CSV.
+ 
+    Parámetros:
+
+    sistema : Sistema
+        Instancia del gestor central.
+    """
+    while True:
+        titulo("MENÚ CSV – SIATA (Calidad del Aire)")
+        print("   1. Cargar nuevo archivo CSV")
+        print("   2. Mostrar info() del archivo")
+        print("   3. Mostrar describe() del archivo")
+        print("   4. Gráficos (plot / boxplot / histograma) de una columna")
+        print("   5. Operación apply()  – raíz cuadrada de una columna")
+        print("   6. Operación map()    – categorizar columna (Bajo/Medio/Alto)")
+        print("   7. Operación suma / resta de dos columnas")
+        print("   8. Convertir columna de fechas a índice (set_index)")
+        print("   9. Resample y gráficos temporales (diario/mensual/trimestral)")
+        print("   10. Resetear datos al estado original")
+        print("   0. Volver al menú principal")
+        linea('-')
+ 
+        opcion = pedir_opcion(
+            ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+        )
+ 
+        # Cargar nuevo CSV 
+        if opcion == '1':
+            ruta = input("\n   Ruta del archivo CSV: ").strip()
+            nombre = input("   Nombre descriptivo (Enter para usar nombre del archivo): ").strip()
+            nombre = nombre if nombre else None
+            try:
+                nuevo = ArchivoCSV(ruta, nombre)
+                sistema.agregar_csv(nuevo)
+            except Exception as e:
+                print(f"   Error al cargar: {e}")
+ 
+        #  Seleccionar CSV para las demás opciones 
+        elif opcion in ['2', '3', '4', '5', '6', '7', '8', '9', '10']:
+            archivo = seleccionar_objeto(sistema.archivos_csv, "CSV")
+            if archivo is None:
+                continue
+ 
+            if opcion == '2':
+                archivo.mostrar_info()
+ 
+            elif opcion == '3':
+                archivo.mostrar_describe()
+ 
+            elif opcion == '4':
+                print(f"\n   Columnas disponibles: {list(archivo.df.columns)}")
+                col = input("   Nombre de la columna a graficar: ").strip()
+                archivo.graficar_columna(col)
+ 
+            elif opcion == '5':
+                print(f"\n   Columnas disponibles: {list(archivo.df.columns)}")
+                col = input("   Nombre de la columna: ").strip()
+                archivo.aplicar_operacion_apply(col)
+ 
+            elif opcion == '6':
+                print(f"\n   Columnas disponibles: {list(archivo.df.columns)}")
+                col = input("   Nombre de la columna: ").strip()
+                archivo.aplicar_operacion_map(col)
+ 
+            elif opcion == '7':
+                print(f"\n   Columnas disponibles: {list(archivo.df.columns)}")
+                col1 = input("   Primera columna: ").strip()
+                col2 = input("   Segunda columna: ").strip()
+                print("   Operación: (s)uma / (r)esta")
+                op = pedir_opcion(['s', 'r'], "   Opción: ")
+                operacion = 'suma' if op == 's' else 'resta'
+                archivo.sumar_restar_columnas(col1, col2, operacion)
+ 
+            elif opcion == '8':
+                print(f"\n   Columnas disponibles: {list(archivo.df.columns)}")
+                col_fecha = input(
+                    "   Nombre de la columna de fechas [Enter = 'fecha_hora']: "
+                ).strip()
+                col_fecha = col_fecha if col_fecha else 'fecha_hora'
+                archivo.convertir_fecha_indice(col_fecha)
+ 
+            elif opcion == '9':
+                # Verificar que el índice sea datetime antes de seguir
+                import pandas as pd
+                if not isinstance(archivo.df.index, pd.DatetimeIndex):
+                    print("\n     El índice no es datetime.")
+                    print("   Use primero la opción 8 (convertir_fecha_indice).")
+                else:
+                    print(f"\n   Columnas disponibles: {list(archivo.df.columns)}")
+                    col = input("   Columna a graficar en el resample: ").strip()
+                    archivo.graficar_resample(col)
+ 
+            elif opcion == '10':
+                archivo.resetear_datos()
+ 
+        elif opcion == '0':
+            break
