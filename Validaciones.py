@@ -360,95 +360,95 @@ class ArchivoCSV:
         print(f"\nPrimeros 5 valores:")
         print(self.df[[columna1, columna2, nueva_columna]].head())
 
-def convertir_fecha_indice(self, nombre_columna_fecha='fecha_hora'):
-        """
-        Convierte la columna de fechas en índice del DataFrame.
-        
-        Parámetros:
-        
-        nombre_columna_fecha : str
-            Nombre de la columna que contiene las fechas (por defecto 'fecha_hora')
-        """
-        if nombre_columna_fecha not in self.df.columns:
-            print(f" Error: La columna '{nombre_columna_fecha}' no existe")
-            return
-        
-        # Convertir a datetime y establecer como índice
-        self.df[nombre_columna_fecha] = pd.to_datetime(self.df[nombre_columna_fecha])
-        self.df.set_index(nombre_columna_fecha, inplace=True)
-        
-        print(f" Columna '{nombre_columna_fecha}' convertida a índice")
-        print(f"  Rango de fechas: {self.df.index.min()} a {self.df.index.max()}")
-        
-def graficar_resample(self, columna, frecuencias=['D', 'ME', 'QE']):
-        """
-        Realiza resample de los datos y grafica en diferentes frecuencias temporales.
-        Requiere que el índice sea de tipo datetime.
-        
-        Parámetros:
-        columna : str
-            Nombre de la columna a graficar
-        frecuencias : list
-            Lista de frecuencias para resample (por defecto ['D', 'ME', 'QE'])
-            D = Días, ME = Meses (Month End), QE = Trimestres (Quarter End)
-        """
-        # Validar que el índice sea datetime
-        if not isinstance(self.df.index, pd.DatetimeIndex):
-            print(" Error: El índice debe ser de tipo datetime")
-            print("  Use primero el método convertir_fecha_indice()")
-            return
-        
-        # Validar columna
-        if columna not in self.df.columns:
-            print(f" Error: La columna '{columna}' no existe")
-            return
-        
-        if not pd.api.types.is_numeric_dtype(self.df[columna]):
-            print(f" Error: La columna '{columna}' no es numérica")
-            return
-        
-        # Diccionario de nombres de frecuencias
-        nombres_freq = {
-            'D': 'Diario',
-            'ME': 'Mensual',
-            'QE': 'Trimestral',
-            'M': 'Mensual',  # Para compatibilidad hacia atrás
-            'Q': 'Trimestral'  # Para compatibilidad hacia atrás
-        } 
-# Crear figura con subplots
-        n_freq = len(frecuencias)
-        fig, axes = plt.subplots(n_freq, 1, figsize=(12, 4*n_freq))
-        
-        # Si solo hay una frecuencia, axes no es array
-        if n_freq == 1:
-            axes = [axes]
-        
-        fig.suptitle(f'Resample de {columna} en diferentes frecuencias', 
-                    fontsize=14, fontweight='bold')
-        
-        # Graficar para cada frecuencia
-        for i, freq in enumerate(frecuencias):
-            # Realizar resample (promedio)
-            datos_resample = self.df[columna].resample(freq).mean()
+    def convertir_fecha_indice(self, nombre_columna_fecha='fecha_hora'):
+            """
+            Convierte la columna de fechas en índice del DataFrame.
             
-            # Graficar
-            axes[i].plot(datos_resample.index, datos_resample.values, 
-                        marker='o', linewidth=2, markersize=4, color='steelblue')
-            axes[i].set_title(f'Resample {nombres_freq.get(freq, freq)}')
-            axes[i].set_xlabel('Fecha')
-            axes[i].set_ylabel(f'{columna} (promedio)')
-            axes[i].grid(True, alpha=0.3)
-            axes[i].tick_params(axis='x', rotation=45)
-        
-        plt.tight_layout()
-        
-        # Guardar gráfico
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nombre_archivo = f"{self.carpeta_graficos}/resample_{columna}_{timestamp}.png"
-        plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
-        print(f" Gráfico de resample guardado: {nombre_archivo}")
-        
-        plt.show()
+            Parámetros:
+            
+            nombre_columna_fecha : str
+                Nombre de la columna que contiene las fechas (por defecto 'fecha_hora')
+            """
+            if nombre_columna_fecha not in self.df.columns:
+                print(f" Error: La columna '{nombre_columna_fecha}' no existe")
+                return
+            
+            # Convertir a datetime y establecer como índice
+            self.df[nombre_columna_fecha] = pd.to_datetime(self.df[nombre_columna_fecha])
+            self.df.set_index(nombre_columna_fecha, inplace=True)
+            
+            print(f" Columna '{nombre_columna_fecha}' convertida a índice")
+            print(f"  Rango de fechas: {self.df.index.min()} a {self.df.index.max()}")
+            
+    def graficar_resample(self, columna, frecuencias=['D', 'ME', 'QE']):
+            """
+            Realiza resample de los datos y grafica en diferentes frecuencias temporales.
+            Requiere que el índice sea de tipo datetime.
+            
+            Parámetros:
+            columna : str
+                Nombre de la columna a graficar
+            frecuencias : list
+                Lista de frecuencias para resample (por defecto ['D', 'ME', 'QE'])
+                D = Días, ME = Meses (Month End), QE = Trimestres (Quarter End)
+            """
+            # Validar que el índice sea datetime
+            if not isinstance(self.df.index, pd.DatetimeIndex):
+                print(" Error: El índice debe ser de tipo datetime")
+                print("  Use primero el método convertir_fecha_indice()")
+                return
+            
+            # Validar columna
+            if columna not in self.df.columns:
+                print(f" Error: La columna '{columna}' no existe")
+                return
+            
+            if not pd.api.types.is_numeric_dtype(self.df[columna]):
+                print(f" Error: La columna '{columna}' no es numérica")
+                return
+            
+            # Diccionario de nombres de frecuencias
+            nombres_freq = {
+                'D': 'Diario',
+                'ME': 'Mensual',
+                'QE': 'Trimestral',
+                'M': 'Mensual',  # Para compatibilidad hacia atrás
+                'Q': 'Trimestral'  # Para compatibilidad hacia atrás
+            } 
+    # Crear figura con subplots
+            n_freq = len(frecuencias)
+            fig, axes = plt.subplots(n_freq, 1, figsize=(12, 4*n_freq))
+            
+            # Si solo hay una frecuencia, axes no es array
+            if n_freq == 1:
+                axes = [axes]
+            
+            fig.suptitle(f'Resample de {columna} en diferentes frecuencias', 
+                        fontsize=14, fontweight='bold')
+            
+            # Graficar para cada frecuencia
+            for i, freq in enumerate(frecuencias):
+                # Realizar resample (promedio)
+                datos_resample = self.df[columna].resample(freq).mean()
+                
+                # Graficar
+                axes[i].plot(datos_resample.index, datos_resample.values, 
+                            marker='o', linewidth=2, markersize=4, color='steelblue')
+                axes[i].set_title(f'Resample {nombres_freq.get(freq, freq)}')
+                axes[i].set_xlabel('Fecha')
+                axes[i].set_ylabel(f'{columna} (promedio)')
+                axes[i].grid(True, alpha=0.3)
+                axes[i].tick_params(axis='x', rotation=45)
+            
+            plt.tight_layout()
+            
+            # Guardar gráfico
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_archivo = f"{self.carpeta_graficos}/resample_{columna}_{timestamp}.png"
+            plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
+            print(f" Gráfico de resample guardado: {nombre_archivo}")
+            
+            plt.show()
 
 
 
@@ -484,3 +484,163 @@ class ArchivoEEG:
         
         # Cargar el archivo
         self._cargar_archivo()
+
+    def _cargar_archivo(self):
+        """
+        Método privado para cargar el archivo .MAT.
+        Carga el archivo original y crea una copia de trabajo.
+        """
+        try:
+            # Cargar archivo .MAT
+            mat_contents = sio.loadmat(self.ruta_archivo)
+            
+            # Extraer la variable 'data' (estructura esperada)
+            if 'data' in mat_contents:
+                self.data_original = mat_contents['data']
+                self.data = self.data_original.copy()
+                
+                print(f" Archivo EEG cargado exitosamente: {self.nombre}")
+                print(f"  Dimensiones: {self.data.shape}")
+                print(f"  Formato: (canales={self.data.shape[0]}, " +
+                      f"muestras={self.data.shape[1]}, épocas={self.data.shape[2]})")
+            else:
+                print(" Error: No se encontró la variable 'data' en el archivo")
+                raise ValueError("Variable 'data' no encontrada")
+                
+        except Exception as e:
+            print(f" Error al cargar el archivo: {str(e)}")
+            raise
+    
+    def mostrar_whosmat(self):
+        """
+        Muestra las claves y estructura del archivo .MAT usando whosmat().
+        """
+        print(f"ESTRUCTURA DEL ARCHIVO - {self.nombre}")
+       
+        
+        # Usar whosmat para mostrar información
+        contents = sio.whosmat(self.ruta_archivo)
+        
+        print("\n Variables en el archivo:")
+        for variable_name, shape, dtype in contents:
+            print(f"  • Variable: {variable_name}")
+            print(f"    Shape: {shape}")
+            print(f"    Tipo: {dtype}")
+        
+        print("\n Información detallada de 'data':")
+        print(f"  • Canales: {self.data.shape[0]}")
+        print(f"  • Muestras por época: {self.data.shape[1]}")
+        print(f"  • Número de épocas: {self.data.shape[2]}")
+        print(f"  • Frecuencia de muestreo: {self.fs} Hz")
+        print(f"  • Duración por época: {self.data.shape[1]/self.fs} segundos")
+       
+    
+    def resetear_datos(self):
+        """
+        Restaura los datos de trabajo a su estado original.
+        """
+        self.data = self.data_original.copy()
+        print("✓ Datos restaurados al estado original")
+    
+def proceso1_sumar_canales(self, canales, punto_min, punto_max, epoca=0):
+        """
+        Proceso 1: Selecciona 3 canales en un rango de puntos, los suma
+        y genera un gráfico con 2 subplots:
+          - Subplot superior : los 3 canales individuales.
+          - Subplot inferior : la suma de los 3 canales.
+ 
+        La matriz se trabaja en 2D extrayendo la época indicada
+        (shape resultante: canales × muestras).
+ 
+        Parámetros:
+        -----------
+        canales : list[int]
+            Lista con exactamente 3 índices de canales (ej. [0, 3, 7]).
+        punto_min : int
+            Punto inicial del rango de muestras (incluido).
+        punto_max : int
+            Punto final del rango de muestras (excluido).
+        epoca : int
+            Índice de la época a analizar (por defecto 0).
+        """
+        # ---- Validaciones ----
+        if len(canales) != 3:
+            print(" Error: Debe seleccionar exactamente 3 canales.")
+            return
+ 
+        for canal in canales:
+            if canal < 0 or canal >= self.data.shape[0]:
+                print(f" Error: Canal {canal} fuera de rango "
+                      f"(válido: 0–{self.data.shape[0]-1}).")
+                return
+ 
+        if punto_min < 0 or punto_max > self.data.shape[1]:
+            print(f" Error: Rango de puntos inválido "
+                  f"(válido: 0–{self.data.shape[1]}).")
+            return
+ 
+        if punto_min >= punto_max:
+            print(" Error: punto_min debe ser menor que punto_max.")
+            return
+ 
+        if epoca < 0 or epoca >= self.data.shape[2]:
+            print(f" Error: Época {epoca} fuera de rango "
+                  f"(válido: 0–{self.data.shape[2]-1}).")
+            return
+ 
+        # ---- Procesamiento ----
+        # Convertir 3D → 2D para la época seleccionada
+        datos_2d = self.data[:, :, epoca]   # shape: (canales, muestras)
+ 
+        c1 = datos_2d[canales[0], punto_min:punto_max]
+        c2 = datos_2d[canales[1], punto_min:punto_max]
+        c3 = datos_2d[canales[2], punto_min:punto_max]
+ 
+        suma = c1 + c2 + c3
+ 
+        # Eje temporal en segundos
+        tiempo = np.arange(punto_min, punto_max) / self.fs
+ 
+        # ---- Gráficos ----
+        fig, axes = plt.subplots(2, 1, figsize=(12, 8))
+        fig.suptitle(
+            f'Proceso 1 – Suma de Canales {canales} | {self.nombre} | Época {epoca}',
+            fontsize=13, fontweight='bold'
+        )
+ 
+        # Subplot 1: canales individuales
+        colores = ['steelblue', 'darkorange', 'seagreen']
+        for idx, (datos_canal, color) in enumerate(zip([c1, c2, c3], colores)):
+            axes[0].plot(tiempo, datos_canal, label=f'Canal {canales[idx]}',
+                         linewidth=1, alpha=0.85, color=color)
+        axes[0].set_title('Canales Individuales')
+        axes[0].set_xlabel('Tiempo (s)')
+        axes[0].set_ylabel('Amplitud (μV)')
+        axes[0].legend(loc='upper right')
+        axes[0].grid(True, alpha=0.3)
+ 
+        # Subplot 2: suma de canales
+        axes[1].plot(tiempo, suma, linewidth=1.5, color='darkred')
+        axes[1].set_title(
+            f'Suma: Canal {canales[0]} + Canal {canales[1]} + Canal {canales[2]}'
+        )
+        axes[1].set_xlabel('Tiempo (s)')
+        axes[1].set_ylabel('Amplitud (μV)')
+        axes[1].grid(True, alpha=0.3)
+ 
+        plt.tight_layout()
+ 
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = (f"{self.carpeta_graficos}/proceso1_"
+                          f"c{canales[0]}-c{canales[1]}-c{canales[2]}_"
+                          f"ep{epoca}_{timestamp}.png")
+        plt.savefig(nombre_archivo, dpi=150, bbox_inches='tight')
+        print(f" Gráfico guardado: {nombre_archivo}")
+        plt.show()
+ 
+        print(f"\n Resumen del procesamiento:")
+        print(f"   Canales seleccionados : {canales}")
+        print(f"   Rango de muestras     : {punto_min}–{punto_max}")
+        print(f"   Número de muestras    : {punto_max - punto_min}")
+        print(f"   Duración analizada    : {(punto_max - punto_min) / self.fs:.3f} s")
+        print(f"   Época analizada       : {epoca}")  
