@@ -6,7 +6,7 @@ CSV (SIATA - Calidad del Aire) y MAT (EEG - Electroencefalografías).
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import scipy.io as sio
+#import scipy.io as sio
 from datetime import datetime
 import os
 
@@ -36,9 +36,9 @@ class Sistema:
         """
         if isinstance(archivo_csv, ArchivoCSV):
             self.archivos_csv.append(archivo_csv)
-            print(f"✓ Archivo CSV '{archivo_csv.nombre}' agregado al sistema")
+            print(f" Archivo CSV '{archivo_csv.nombre}' agregado al sistema")
         else:
-            print("✗ Error: El objeto no es de tipo ArchivoCSV")
+            print(" Error: El objeto no es de tipo ArchivoCSV")
     
     def agregar_eeg(self, archivo_eeg):
         """
@@ -50,9 +50,9 @@ class Sistema:
         """
         if isinstance(archivo_eeg, ArchivoEEG):
             self.archivos_eeg.append(archivo_eeg)
-            print(f"✓ Archivo EEG '{archivo_eeg.nombre}' agregado al sistema")
+            print(f" Archivo EEG '{archivo_eeg.nombre}' agregado al sistema")
         else:
-            print("✗ Error: El objeto no es de tipo ArchivoEEG")
+            print(" Error: El objeto no es de tipo ArchivoEEG")
     
     def listar_archivos(self):
 
@@ -108,5 +108,134 @@ class Sistema:
 
 
 # CLASE ARCHIVOCSV - Manipulación de archivos CSV del SIATA
+
+
+class ArchivoCSV:
+    """
+    Clase para manipular archivos CSV del SIATA.
+    Permite cargar, visualizar información, graficar y realizar operaciones
+    sobre los datos.
+    """
+    
+    def __init__(self, ruta_archivo, nombre=None):
+        """
+        Constructor de la clase ArchivoCSV.
+        
+        Parámetros:
+        
+        ruta_archivo : str
+            Ruta completa al archivo CSV
+        nombre : str, opcional
+            Nombre descriptivo del archivo (si no se provee, usa el nombre del archivo)
+        """
+        self.ruta_archivo = ruta_archivo
+        self.nombre = nombre if nombre else os.path.basename(ruta_archivo)
+        self.df_original = None  # DataFrame original 
+        self.df = None  # DataFrame de trabajo (copia)
+        self.carpeta_graficos = "graficos_csv"  # Carpeta para guardar gráficos
+        
+        # Crear carpeta de gráficos si no existe
+        if not os.path.exists(self.carpeta_graficos):
+            os.makedirs(self.carpeta_graficos)
+        
+        # Cargar el archivo
+        self._cargar_archivo()
+    
+    def _cargar_archivo(self):
+        """
+        Método privado para cargar el archivo CSV.
+        Carga el archivo original y crea una copia de trabajo.
+        """
+        try:
+            # Cargar archivo original (se mantiene intacto)
+            self.df_original = pd.read_csv(self.ruta_archivo)
+            
+            # Crear copia de trabajo
+            self.df = self.df_original.copy()
+            
+            print(f" Archivo CSV cargado exitosamente: {self.nombre}")
+            print(f"  Dimensiones: {self.df.shape[0]} filas x {self.df.shape[1]} columnas")
+            
+        except Exception as e:
+            print(f" Error al cargar el archivo: {str(e)}")
+            raise
+    
+    def mostrar_info(self):
+        """
+        Muestra información básica del DataFrame usando info().
+        """
+        print(f"INFORMACIÓN BÁSICA - {self.nombre}")
+        self.df.info()
+
+    
+    def mostrar_describe(self):
+        """
+        Muestra estadísticas descriptivas del DataFrame usando describe().
+        """
+        
+        print(f"ESTADÍSTICAS DESCRIPTIVAS - {self.nombre}") 
+        print(self.df.describe())
+
+    
+    def resetear_datos(self):
+        """
+        Restaura el DataFrame de trabajo a su estado original.
+        """
+        self.df = self.df_original.copy()
+        print(" Datos restaurados al estado original")
+    
+    def graficar_columna(self, nombre_columna):
+        """
+        Crea 3 gráficos (plot, boxplot, histograma) de una columna específica.
+        Los gráficos se muestran en subplots y se guardan automáticamente.
+        
+        Parámetros:
+    
+        nombre_columna : str
+            Nombre de la columna a graficar
+        """
+        # Validar que la columna exista
+        if nombre_columna not in self.df.columns:
+            print(f"✗ Error: La columna '{nombre_columna}' no existe")
+            print(f"  Columnas disponibles: {list(self.df.columns)}")
+            return
+        
+        # Validar que la columna sea numérica
+        if not pd.api.types.is_numeric_dtype(self.df[nombre_columna]):
+            print(f" Error: La columna '{nombre_columna}' no es numérica")
+            return
+        
+        # Crear figura con 3 subplots
+        fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+        fig.suptitle(f'Análisis de {nombre_columna}', fontsize=14, fontweight='bold')
+        
+        # 1. Plot (línea temporal)
+        axes[0].plot(self.df[nombre_columna], linewidth=0.8, color='steelblue')
+        axes[0].set_title('Serie Temporal')
+        axes[0].set_xlabel('Índice')
+        axes[0].set_ylabel(nombre_columna)
+        axes[0].grid(True, alpha=0.3)
+        
+        # 2. Boxplot
+        axes[1].boxplot(self.df[nombre_columna].dropna(), vert=True, patch_artist=True,
+                       boxprops=dict(facecolor='lightblue', color='steelblue'),
+                       whiskerprops=dict(color='steelblue'),
+                       capprops=dict(color='steelblue'),
+                       medianprops=dict(color='red', linewidth=2))
+        axes[1].set_title('Diagrama de Caja')
+        axes[1].set_ylabel(nombre_columna)
+        axes[1].grid(True, alpha=0.3, axis='y')
+        
+        # 3. Histograma
+        axes[2].hist(self.df[nombre_columna].dropna(), bins=30, color='skyblue', 
+                    edgecolor='steelblue', alpha=0.7)
+        axes[2].set_title('Histograma')
+        axes[2].set_xlabel(nombre_columna)
+        axes[2].set_ylabel('Frecuencia')
+        axes[2].grid(True, alpha=0.3, axis='y')
+        
+        plt.tight_layout()
+        
+        # Guardar gráfico
 
 
