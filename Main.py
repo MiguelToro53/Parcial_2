@@ -214,3 +214,84 @@ def submenu_csv(sistema):
  
         elif opcion == '0':
             break
+
+def submenu_eeg(sistema):
+    """
+    Sub-menú completo para la gestión y procesamiento de archivos EEG (.MAT).
+ 
+    Parámetros:
+    
+    sistema : Sistema
+        Instancia del gestor central.
+    """
+    while True:
+        titulo("MENÚ EEG – Electroencefalografías (.MAT)")
+        print("   1. Cargar nuevo archivo EEG (.MAT)")
+        print("   2. Mostrar estructura del archivo (whosmat)")
+        print("   3. Proceso 1 – Seleccionar 3 canales, sumar y graficar (2D)")
+        print("   4. Proceso 2 – Promedio y desviación estándar con stem plots (3D)")
+        print("   5. Resetear datos al estado original")
+        print("   0. Volver al menú principal")
+        linea('-')
+ 
+        opcion = pedir_opcion(['0', '1', '2', '3', '4', '5'])
+ 
+        #  Cargar nuevo EEG 
+        if opcion == '1':
+            ruta = input("\n   Ruta del archivo .MAT: ").strip()
+            nombre = input("   Nombre descriptivo (Enter para usar nombre del archivo): ").strip()
+            nombre = nombre if nombre else None
+            try:
+                nuevo = ArchivoEEG(ruta, nombre)
+                sistema.agregar_eeg(nuevo)
+            except Exception as e:
+                print(f"   Error al cargar: {e}")
+ 
+        elif opcion in ['2', '3', '4', '5']:
+            archivo = seleccionar_objeto(sistema.archivos_eeg, "EEG")
+            if archivo is None:
+                continue
+ 
+            if opcion == '2':
+                archivo.mostrar_whosmat()
+ 
+            elif opcion == '3':
+                # Proceso 1
+                n_canales = archivo.data.shape[0]
+                n_muestras = archivo.data.shape[1]
+                n_epocas = archivo.data.shape[2]
+ 
+                print(f"\n   Archivo: {archivo.nombre}")
+                print(f"   Canales disponibles : 0 – {n_canales - 1}")
+                print(f"   Rango de muestras   : 0 – {n_muestras - 1}")
+                print(f"   Épocas disponibles  : 0 – {n_epocas - 1}")
+ 
+                print("\n   Ingrese 3 canales:")
+                c1 = pedir_entero(f"   Canal 1 (0–{n_canales-1}): ", 0, n_canales - 1)
+                c2 = pedir_entero(f"   Canal 2 (0–{n_canales-1}): ", 0, n_canales - 1)
+                c3 = pedir_entero(f"   Canal 3 (0–{n_canales-1}): ", 0, n_canales - 1)
+ 
+                p_min = pedir_entero(f"   Punto mínimo (0–{n_muestras-2}): ", 0, n_muestras - 2)
+                p_max = pedir_entero(f"   Punto máximo ({p_min+1}–{n_muestras-1}): ",
+                                     p_min + 1, n_muestras - 1)
+                epoca = pedir_entero(f"   Época (0–{n_epocas-1}): ", 0, n_epocas - 1)
+ 
+                archivo.proceso1_sumar_canales([c1, c2, c3], p_min, p_max, epoca)
+ 
+            elif opcion == '4':
+                # Proceso 2
+                print(f"\n   Archivo: {archivo.nombre}")
+                print(f"   Shape: {archivo.data.shape} (canales, muestras, épocas)")
+                print("\n   Eje de reducción:")
+                print("     0 → reducir sobre canales   → resultado (muestras × épocas)")
+                print("     1 → reducir sobre muestras  → resultado (canales × épocas)")
+                print("     2 → reducir sobre épocas    → resultado (canales × muestras)  ← recomendado")
+                eje = pedir_entero("   Eje (0, 1 o 2): ", 0, 2)
+                archivo.proceso2_promedio_desviacion(eje)
+ 
+            elif opcion == '5':
+                archivo.resetear_datos()
+ 
+        elif opcion == '0':
+            break
+
